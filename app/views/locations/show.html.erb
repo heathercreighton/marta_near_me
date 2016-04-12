@@ -1,0 +1,81 @@
+
+<div class="row">
+<div class="col-md-4">
+<div class="well">
+<p id="notice"><%= notice %></p>
+
+<h2>You are currently standing at...</h2>
+
+<p>
+	<!--my_location will be defined in the model, as the combination of addres and city -->
+  <%= @location.address %>
+</p>
+
+<h2>The Closest Buses Are...</h2>
+<!-- what if there are not buses nearby? -->
+<% if @bus_count== 0 %>
+	<p>
+		...not really that close.  It may be best to just use Uber. </p>
+<% end %>		
+
+<!-- but if there are some buses in the vicinity -->
+
+
+<% @nearby_buses.each_with_index do |bus, index| %>
+
+
+	<!-- we'll show the route no., vehicle no., and where the bus' next stop is -->
+	<p>
+	  <strong>Route </strong><%= bus["ROUTE"] %><br>  
+	  <strong>Vehicle #</strong><%= bus["VEHICLE"] %><br> 
+	  <strong>Next Stop:</strong><%= bus["TIMEPOINT"] %><br> 
+	</p>
+
+	<script>
+		$(document).ready(function (){
+
+			function initialize() {
+
+		  	var myLatLng = new google.maps.LatLng(<%= @location.latitude %>, <%= @location.longitude %>);
+		  	var busLatLng = new google.maps.LatLng(<%= bus["LATITUDE"] %>, <%= bus["LONGITUDE"] %>);
+
+		    var mapOptions = {
+			    center: myLatLng,
+			    zoom: 14,
+			    scrollwheel: false
+		    };
+		      
+		    var map = new google.maps.Map(document.getElementById('map-canvas<%= index %>'), mapOptions);
+
+		    var marker = new google.maps.Marker({
+				  position: busLatLng,
+				  map: map,
+				  title: 'Nearby bus',
+				  animation: google.maps.Animation.BOUNCE
+				});
+
+				var contentString = "<h3> It's a bus! </h3>";
+
+				var infoWindow = new google.maps.InfoWindow({
+					content: contentString
+				});
+
+				google.maps.event.addListener(marker, 'click', function() {
+		    	infoWindow.open(map,marker);
+		 		});
+				  	
+			}
+				    
+			google.maps.event.addDomListener(window, 'load', initialize);
+		});
+	</script>
+	<div id="map-canvas<%= index %>" class="bus-map"></div>
+ <% end %> 
+
+
+
+<%= link_to "Actually, I'm at...", edit_location_path(@location), class: 'btn btn-info' %> 
+
+</div>
+</div>
+</div>
